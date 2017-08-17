@@ -146,10 +146,4 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             isSame = false;
         }
     }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        DbCore.getInstance().closeConnection();
-    }
 }
