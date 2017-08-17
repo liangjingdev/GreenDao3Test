@@ -1,0 +1,112 @@
+package com.liangjing.greendao3;
+
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.Button;
+
+import com.liangjing.greendao3.db.DbUtil;
+import com.liangjing.greendao3.db.StudentHelper;
+import com.liangjing.greendao3.entity.Student;
+import com.liangjing.unirecyclerviewlib.adapter.AdapterForRecyclerView;
+import com.liangjing.unirecyclerviewlib.adapter.ViewHolderForRecyclerView;
+import com.liangjing.unirecyclerviewlib.recyclerview.OptionRecyclerView;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+
+    private OptionRecyclerView mRv;
+    private AdapterForRecyclerView mAdapter;
+    private List<Student> mList; //要显示到列表的数据
+    private List<Student> dbList;  //存进数据库的数据
+    private StudentHelper mHelper;
+    private Button addButton; //添加数据
+    private Button deleteButton; //删除数据
+    private Student mStudent;
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        init();
+    }
+
+    private void init() {
+
+        mStudent = new Student();
+        addButton = (Button) findViewById(R.id.bt_add);
+        deleteButton = (Button) findViewById(R.id.bt_minus);
+        addButton.setOnClickListener(this);
+        deleteButton.setOnClickListener(this);
+
+        mHelper = DbUtil.getStudentHelper();
+        mList = new ArrayList<>();
+        dbList = new ArrayList<>();
+        initData();
+    }
+
+    /**
+     * function:显示数据到列表
+     */
+    private void showData() {
+        mRv = (OptionRecyclerView) findViewById(R.id.rv);
+        mAdapter = new AdapterForRecyclerView<Student>(this, mList, R.layout.student_item_layout) {
+            @Override
+            public void convert(ViewHolderForRecyclerView holder, Student student, int position) {
+                holder.setText(R.id.tv_id, String.valueOf(student.getId()));
+                holder.setText(R.id.tv_age, student.getAge());
+                holder.setText(R.id.tv_name, student.getName());
+                holder.setText(R.id.tv_number, student.getNumber());
+            }
+        };
+        mRv.setAdapter(mAdapter);
+    }
+
+
+    /**
+     * function:添加基本数据进入数据库
+     */
+    private void initData() {
+
+        for (int i = 0; i < 10; i++) {
+            Student student = new Student();
+            student.setId((long) i);
+            student.setAge("19" + i);
+            student.setName("小明" + 1);
+            student.setScore("99" + i);
+            student.setNumber("132321" + i);
+            dbList.add(student);
+        }
+        mHelper.save(dbList);
+        mList = dbList;
+        //显示数据
+        showData();
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+
+            //添加单个数据
+            case R.id.bt_add:
+                mStudent.setId((long) 50);
+                mStudent.setAge("22");
+                mStudent.setName("小红");
+                mStudent.setScore("100");
+                mStudent.setNumber("2773");
+                mHelper.save(mStudent);
+                mAdapter.addLastItem(mStudent);
+                break;
+
+            //移除单个数据
+            case R.id.bt_minus:
+                mStudent = mHelper.query((long) 0);
+                mHelper.deleteByKey((long) 0);
+                mAdapter.removeItem(mStudent);
+                break;
+        }
+    }
+}
