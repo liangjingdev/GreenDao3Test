@@ -4,7 +4,9 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
+import com.liangjing.greendao3.db.DbCore;
 import com.liangjing.greendao3.db.DbUtil;
 import com.liangjing.greendao3.db.StudentHelper;
 import com.liangjing.greendao3.entity.Student;
@@ -25,6 +27,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button addButton; //添加数据
     private Button deleteButton; //删除数据
     private Student mStudent;
+    private boolean isSame = false; //判断是否有相同的数据
 
 
     @Override
@@ -97,16 +100,56 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mStudent.setName("小红");
                 mStudent.setScore("100");
                 mStudent.setNumber("2773");
-                mHelper.save(mStudent);
-                mAdapter.addLastItem(mStudent);
+                mHelper.saveOrUpdate(mStudent);
+
+                //给列表添加数据
+                addItemToList();
+
                 break;
 
             //移除单个数据
             case R.id.bt_minus:
                 mStudent = mHelper.query((long) 0);
                 mHelper.deleteByKey((long) 0);
-                mAdapter.removeItem(mStudent);
+
+                //让列表移除数据
+                removeItemFromList();
                 break;
         }
+    }
+
+
+    /**
+     * function:从列表中删除数据
+     */
+    private void removeItemFromList() {
+        mAdapter.removeItem(mStudent);
+    }
+
+    /**
+     * 添加数据到列表
+     */
+    private void addItemToList() {
+
+        //判断所添加的数据在列表中是否已经存在
+        for (int i = 0; i < mList.size(); i++) {
+            if (mStudent.getId() == mList.get(i).getId()) {
+                isSame = true;
+
+            }
+        }
+
+        if (!isSame) {
+            mAdapter.addLastItem(mStudent);
+        } else {
+            Toast.makeText(this, "已有相同数据", Toast.LENGTH_SHORT).show();
+            isSame = false;
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        DbCore.getInstance().closeConnection();
     }
 }

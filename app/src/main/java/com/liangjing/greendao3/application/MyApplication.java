@@ -26,4 +26,5 @@ public class MyApplication extends Application{
         //log管理
         KLog.init(BuildConfig.DEBUG);
     }
+
 }

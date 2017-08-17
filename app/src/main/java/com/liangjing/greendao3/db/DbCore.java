@@ -21,10 +21,15 @@ public class DbCore {
     private static Context mContext;
     private static String DB_NAME; //数据库名称
     private static volatile DbCore sDbCore = new DbCore();  //采用单例模式创建该对象
+    private static DaoMaster.OpenHelper sHelper;
 
     private DbCore() {
     }
 
+    /**
+     * function:单例模式获得数据库对象
+     * @return
+     */
     public static DbCore getInstance() {
         if (sDbCore == null) {
             synchronized (DbCore.class) {
@@ -37,11 +42,12 @@ public class DbCore {
     }
 
     public static void init(Context context) {
-        init(context,DEFAULT_DB_NAME);
+        init(context, DEFAULT_DB_NAME);
     }
 
     /**
      * function:初始化
+     *
      * @param context
      * @param dbName
      */
@@ -56,13 +62,14 @@ public class DbCore {
 
     /**
      * function:获取DaoMaster对象
+     *
      * @return
      */
-    public static DaoMaster getDaoMaster(){
-        if (mDaoMaster ==null){
+    public static DaoMaster getDaoMaster() {
+        if (mDaoMaster == null) {
             //此处不可用 DaoMaster.DevOpenHelper, 那是开发辅助类，我们要自定义一个，方便升级
-            DaoMaster.OpenHelper helper = new MyOpenHelper(mContext,DB_NAME);
-            mDaoMaster = new DaoMaster(helper.getWritableDatabase());
+            sHelper = new MyOpenHelper(mContext, DB_NAME);
+            mDaoMaster = new DaoMaster(sHelper.getWritableDatabase());
         }
         return mDaoMaster;
     }
@@ -70,11 +77,12 @@ public class DbCore {
 
     /**
      * function:获取DaoSession对象
+     *
      * @return
      */
-    public static DaoSession getDaoSession(){
-        if (mDaoSession == null){
-            if (mDaoMaster == null){
+    public static DaoSession getDaoSession() {
+        if (mDaoSession == null) {
+            if (mDaoMaster == null) {
                 mDaoMaster = getDaoMaster();
             }
             mDaoSession = mDaoMaster.newSession();
@@ -82,9 +90,35 @@ public class DbCore {
         return mDaoSession;
     }
 
-    public static void enableQueryBuilderLog(){
+    /**
+     * function:打印日志
+     */
+    public static void enableQueryBuilderLog() {
         QueryBuilder.LOG_SQL = true;
         QueryBuilder.LOG_VALUES = true;
+    }
+
+    /**
+     * function: 关闭所有的操作，数据库开启后，使用完毕要关闭
+     */
+    public void closeConnection() {
+        closeHelper();
+        closeDaoSession();
+    }
+
+    private void closeDaoSession() {
+        if (mDaoSession != null) {
+            mDaoSession.clear();
+            mDaoSession = null;
+        }
+    }
+
+
+    private void closeHelper() {
+        if (sHelper != null) {
+            sHelper.close();
+            sHelper = null;
+        }
     }
 
 }
