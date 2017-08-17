@@ -7,7 +7,7 @@ import org.greenrobot.greendao.AbstractDao;
 /**
  * Created by liangjing on 2017/8/17.
  * <p>
- * function:一个实体类(表)对应一个实现类--该类是学生表(Student)的具体实现
+ * function:一个实体类对应一个实现类--该类是学生表(Student)的具体实现
  */
 
 public class StudentHelper extends BaseDbHelper<Student, Long> {
